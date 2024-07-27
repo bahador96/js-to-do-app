@@ -2,12 +2,14 @@ const taskInput = document.getElementById("task-input");
 const dateInput = document.getElementById("date-input");
 const addButton = document.getElementById("add-button");
 const deleteAllBtn = document.getElementById("delete-all-button");
-
 const alertMessage = document.getElementById("alert-message");
-// const table = document.querySelector("table");
-// const tbody = document.querySelector("tbody");
+const todoBody = document.querySelector("tbody");
 
-const todos = JSON.parse(localStorage.getItem("todos")) || [];
+let todos = JSON.parse(localStorage.getItem("todos")) || [];
+
+const saveToLocalStorage = () => {
+  localStorage.setItem("todos", JSON.stringify(todos));
+};
 
 console.log(todos);
 const generateId = () => {
@@ -29,8 +31,27 @@ const showAlert = (message, type) => {
   }, 2000);
 };
 
-const saveToLocalStorage = () => {
-  localStorage.setItem("todos", JSON.stringify(todos));
+const displayTodos = () => {
+  todoBody.innerHTML = "";
+  if (!todos.length) {
+    todoBody.innerHTML = "<tr><td colspan='4'>No tasks added</td></tr>";
+    return;
+  }
+
+  todos.forEach((todo) => {
+    todoBody.innerHTML += `
+    <tr>
+    <td>${todo.task}</td>
+    <td>${todo.date || "No date"}</td>
+    <td>${todo.completed ? "Completed" : "Pending"}</td>
+    <td>
+    <button>Edit</button>
+    <button>Do</button>
+    <button>Delete</button>
+    </td>
+    </tr>
+    `;
+  });
 };
 
 const addHandler = () => {
@@ -46,6 +67,7 @@ const addHandler = () => {
   if (task) {
     todos.push(todo);
     saveToLocalStorage();
+    displayTodos();
     taskInput.value = "";
     dateInput.value = "";
     console.log(todos);
@@ -55,4 +77,19 @@ const addHandler = () => {
   }
 };
 
+deleteAllHandler = () => {
+  if (!todos.length) {
+    showAlert("No tasks to delete", "error");
+    return;
+  }
+  todos = [];
+  saveToLocalStorage();
+  displayTodos();
+  showAlert("All tasks deleted successfully", "success");
+};
+
+window.addEventListener("load", displayTodos);
+
 addButton.addEventListener("click", addHandler);
+
+deleteAllBtn.addEventListener("click", deleteAllHandler);
